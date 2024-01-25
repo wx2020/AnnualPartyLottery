@@ -4,8 +4,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -32,7 +30,7 @@ public class DynamicLotteryApp {
 
     public DynamicLotteryApp() {
         ExcelReader reader = new ExcelReader();
-        employeeMap = reader.read();
+        employeeMap = reader.read(ExcelReader.normPath);
         drawer = new LuckyDraw();
         initialize();
     }
@@ -142,7 +140,17 @@ public class DynamicLotteryApp {
         AbstractAction exitButtonAction = new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.exit(0);
+                int result = JOptionPane.showConfirmDialog(
+                        frame,
+                        "确认退出？",
+                        "提示",
+                        JOptionPane.YES_NO_OPTION);
+
+                if (result == JOptionPane.YES_OPTION) {
+                    // 用户点击了"是"，执行退出逻辑
+                    System.exit(0);
+                }
+                // 如果用户点击了"否"或关闭了对话框，不执行退出逻辑
             }
         };
         exitButton.addActionListener(exitButtonAction);
@@ -228,7 +236,9 @@ public class DynamicLotteryApp {
 
     private void updateLotteryList(int selectedPrize) {
         List<String> winnersList;
-        currentLotteryList.clear();
+        if (!currentLotteryList.isEmpty()) {
+            currentLotteryList.clear();
+        }
 
         switch (selectedPrize) {
             case 1:
