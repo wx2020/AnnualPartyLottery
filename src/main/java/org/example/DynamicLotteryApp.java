@@ -21,6 +21,7 @@ public class DynamicLotteryApp {
     private JButton drawButton;
     private JButton stopButton;
     private JButton clearButton;
+    private JButton exitButton;
     private JRadioButton specialPrizeRadio;
     private JRadioButton firstPrizeRadio;
     private JRadioButton secondPrizeRadio;
@@ -128,6 +129,15 @@ public class DynamicLotteryApp {
         buttonPanel.add(specialPrizeRadio);
         buttonPanel.add(firstPrizeRadio);
         buttonPanel.add(secondPrizeRadio);
+
+        exitButton = new JButton("退出抽奖");
+        exitButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);
+            }
+        });
+        buttonPanel.add(exitButton);
 
         labelPanel = new JPanel() {
             @Override
