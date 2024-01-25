@@ -177,6 +177,7 @@ public class DynamicLotteryApp {
 
             isDrawing = true;
             drawButton.setEnabled(false);
+            clearButton.setEnabled(false);
             stopButton.setEnabled(true);
 
             int selectedPrize = getSelectedPrize();
@@ -201,6 +202,7 @@ public class DynamicLotteryApp {
             isDrawing = false;
             drawButton.setEnabled(true);
             stopButton.setEnabled(false);
+            clearButton.setEnabled(true);
 
             executorService.shutdown();
         }
