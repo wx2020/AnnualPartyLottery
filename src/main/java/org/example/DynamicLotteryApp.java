@@ -4,6 +4,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -29,6 +31,9 @@ public class DynamicLotteryApp {
     private LuckyDraw drawer;
 
     public DynamicLotteryApp() {
+        ExcelReader reader = new ExcelReader();
+        employeeMap = reader.read();
+        drawer = new LuckyDraw();
         initialize();
     }
 
@@ -84,21 +89,31 @@ public class DynamicLotteryApp {
         frame.add(buttonPanel, BorderLayout.NORTH);
 
         drawButton = new JButton("开始抽奖");
-        drawButton.addActionListener(new ActionListener() {
+        AbstractAction drawButtonAction = new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 startDrawing();
             }
-        });
+        };
+        // 开始抽奖按钮绑定回车
+        drawButton.getInputMap().put(KeyStroke.getKeyStroke("ENTER"), "pressed");
+        drawButton.getActionMap().put("pressed", drawButtonAction);
+        drawButton.addActionListener(drawButtonAction);
+
         buttonPanel.add(drawButton);
 
         stopButton = new JButton("停止抽奖");
-        stopButton.addActionListener(new ActionListener() {
+        AbstractAction stopButtonAction = new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 stopDrawing();
             }
-        });
+        };
+        // 停止抽奖按钮绑定空格
+        stopButton.getInputMap().put(KeyStroke.getKeyStroke("SPACE"), "pressed");
+        stopButton.getActionMap().put("pressed", stopButtonAction);
+        stopButton.addActionListener(stopButtonAction);
+
         buttonPanel.add(stopButton);
 
         clearButton = new JButton("清空中奖者");
@@ -124,12 +139,13 @@ public class DynamicLotteryApp {
         buttonPanel.add(secondPrizeRadio);
 
         exitButton = new JButton("退出抽奖");
-        exitButton.addActionListener(new ActionListener() {
+        AbstractAction exitButtonAction = new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 System.exit(0);
             }
-        });
+        };
+        exitButton.addActionListener(exitButtonAction);
         buttonPanel.add(exitButton);
 
         labelPanel = new JPanel() {
@@ -144,9 +160,16 @@ public class DynamicLotteryApp {
         frame.add(labelPanel, BorderLayout.CENTER);
         frame.setVisible(true);
 
-        ExcelReader reader = new ExcelReader();
-        employeeMap = reader.read();
-        drawer = new LuckyDraw();
+        // 退出抽奖按钮绑定ESC
+        // 获取 JRootPane 的 InputMap
+        InputMap inputMap = exitButton.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        // 将 AbstractAction 绑定到 ESC 键
+        inputMap.put(KeyStroke.getKeyStroke("ESCAPE"), "pressed");
+        // 获取 JRootPane 的 ActionMap
+        ActionMap actionMap = exitButton.getRootPane().getActionMap();
+        // 将 AbstractAction 绑定到按钮的 "pressed" 上
+        actionMap.put("pressed", exitButtonAction);
+
     }
 
     private void initGlobalFont() {
@@ -160,7 +183,7 @@ public class DynamicLotteryApp {
     private void startDrawing() {
         if (!isDrawing) {
             if (!specialPrizeRadio.isSelected() && !firstPrizeRadio.isSelected() && !secondPrizeRadio.isSelected()) {
-                JOptionPane.showMessageDialog(frame, "请选中要抽的奖项！", "警告", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(frame, "请选中要抽的奖项！", "提示", JOptionPane.WARNING_MESSAGE);
                 return;
             }
 
@@ -183,6 +206,8 @@ public class DynamicLotteryApp {
                     updateLotteryList(selectedPrize);
                 }
             }, 0, 100, TimeUnit.MILLISECONDS);
+
+
         }
     }
 
