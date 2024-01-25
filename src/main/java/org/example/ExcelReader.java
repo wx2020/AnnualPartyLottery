@@ -9,8 +9,9 @@ import java.util.HashMap;
 
 public class ExcelReader {
 
-    private String path = "/excel/name_list_new.xlsx";
-    public HashMap<String, String> read() {
+    public static String specPath = "/excel/name_list_spec.xlsx";
+    public static String normPath = "/excel/name_list_norm.xlsx";
+    public HashMap<String, String> read(String path) {
         try {
             // 读取 Excel 文件
             InputStream inputStream = ExcelReader.class.getResourceAsStream(path);
@@ -37,7 +38,9 @@ public class ExcelReader {
     }
     public static void main(String[] args) {
         ExcelReader excelReader = new ExcelReader();
-        HashMap<String, String> employeeMap = excelReader.read();
-        System.out.println("employeeMap = " + employeeMap);
+        HashMap<String, String> specEmployeeMap = excelReader.read(specPath);
+        System.out.println("spec employee Map = " + specEmployeeMap);
+        HashMap<String, String> normEmployeeMap = excelReader.read(normPath);
+        System.out.println("norm employee Map = " + normEmployeeMap);
     }
 }
