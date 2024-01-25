@@ -9,7 +9,7 @@ import java.util.HashMap;
 
 public class ExcelReader {
 
-    private String path = "/excel/name_list.xlsx";
+    private String path = "/excel/name_list_new.xlsx";
     public HashMap<String, String> read() {
         try {
             // 读取 Excel 文件
