@@ -114,11 +114,11 @@ public class DynamicLotteryApp {
 
         buttonPanel.add(stopButton);
 
-        clearButton = new JButton("清空中奖者");
+        clearButton = new JButton("兑奖");
         clearButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                clearWinners();
+                clearAndSaveWinners();
             }
         });
         buttonPanel.add(clearButton);
@@ -288,7 +288,8 @@ public class DynamicLotteryApp {
         labelPanel.repaint();
     }
 
-    private void clearWinners() {
+    private void clearAndSaveWinners() {
+        drawer.redeemPrize(currentLotteryList);
         currentLotteryList.clear();
         labelPanel.removeAll();
         labelPanel.revalidate();

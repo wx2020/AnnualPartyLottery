@@ -8,16 +8,19 @@ import java.util.List;
 
 public class LuckyDraw {
 
+    private final List<String> winnerList = new ArrayList<>();
+
     public List<String> drawPrize(HashMap<String, String> employeeMap, int count) {
         SecureRandom random = new SecureRandom();
         List<String> selectedElements = new ArrayList<>();
-        List<String> list = new ArrayList<>(employeeMap.keySet());
-        Collections.sort(list);
+        List<String> jobNumberList = new ArrayList<>(employeeMap.keySet());
+        jobNumberList.removeAll(winnerList);
+        Collections.sort(jobNumberList);
 
         // 生成随机索引，将对应元素加入选中列表
         while (selectedElements.size() < count) {
-            int randomIndex = random.nextInt(list.size());
-            String randomElement = list.get(randomIndex);
+            int randomIndex = random.nextInt(jobNumberList.size());
+            String randomElement = jobNumberList.get(randomIndex);
 
             // 确保不重复选择
             if (!selectedElements.contains(randomElement)) {
@@ -27,6 +30,12 @@ public class LuckyDraw {
 
         return selectedElements;
     }
+
+    public void redeemPrize(List<String> currentLotteryList) {
+        this.winnerList.addAll(currentLotteryList);
+    }
+
+
     public static void main(String[] args) {
         ExcelReader reader = new ExcelReader();
         HashMap<String, String> employeeMap = reader.read(ExcelReader.normPath);
