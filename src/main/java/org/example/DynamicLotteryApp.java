@@ -14,7 +14,6 @@ public class DynamicLotteryApp {
     private JFrame frame;
     private JPanel buttonPanel;
     private JPanel labelPanel;
-    private List<String> totalParticipantList;
     private List<String> currentLotteryList;
     private boolean isDrawing;
     private ScheduledExecutorService executorService;
@@ -76,12 +75,6 @@ public class DynamicLotteryApp {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         frame.setLayout(new BorderLayout());
-
-        totalParticipantList = new ArrayList<>();
-
-        for (int i = 1; i <= 20; i++) {
-            totalParticipantList.add("参与者" + i);
-        }
 
         currentLotteryList = new ArrayList<>();
 
@@ -209,8 +202,6 @@ public class DynamicLotteryApp {
     }
 
     private void updateLotteryList(int selectedPrize) {
-        List<String> shuffledList = new ArrayList<>(totalParticipantList);
-        Collections.shuffle(shuffledList);
         List<String> winnersList;
         currentLotteryList.clear();
 
