@@ -259,6 +259,7 @@ public class DynamicLotteryApp {
                 updateCurrentPrice(currentPrice, currentPriceIndex);
             }
         });
+        MusicPlayer.getInstance("background.wav");
     }
 
     private void updateCurrentPrice(int selectedPrize, int index) {
