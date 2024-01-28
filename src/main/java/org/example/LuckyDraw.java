@@ -1,20 +1,17 @@
 package org.example;
 
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class LuckyDraw {
 
-    private final List<String> winnerList = new ArrayList<>();
+    private final List<String> winnersList = new ArrayList<>();
 
     public List<String> drawPrize(HashMap<String, String> employeeMap, int count) {
         SecureRandom random = new SecureRandom();
         List<String> selectedElements = new ArrayList<>();
         List<String> jobNumberList = new ArrayList<>(employeeMap.keySet());
-        jobNumberList.removeAll(winnerList);
+        jobNumberList.removeAll(winnersList);
         Collections.sort(jobNumberList);
 
         // 生成随机索引，将对应元素加入选中列表
@@ -31,10 +28,9 @@ public class LuckyDraw {
         return selectedElements;
     }
 
-    public void redeemPrize(List<String> currentLotteryList) {
-        this.winnerList.addAll(currentLotteryList);
+    public void redeemPrize(List<String> winnersList) {
+        this.winnersList.addAll(winnersList);
     }
-
 
     public static void main(String[] args) {
         ExcelReader reader = new ExcelReader();
