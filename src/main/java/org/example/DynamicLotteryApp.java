@@ -245,6 +245,18 @@ public class DynamicLotteryApp {
                 currentPriceIndex = 0;
                 updatePriceImgPathList(currentPrice);
                 updateCurrentPrice(currentPrice, currentPriceIndex);
+                namePanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 300));
+
+            }
+        });
+
+        specialPrizeRadio.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                currentPrice = 0;
+                currentPriceIndex = 0;
+                updatePriceImgPathList(currentPrice);
+                updateCurrentPrice(currentPrice, currentPriceIndex);
             }
         });
     }
@@ -411,7 +423,6 @@ public class DynamicLotteryApp {
                 for (int i = 0; i < 10; i++) {
                     currentLotteryList.add(String.format("%s %s", winnersList.get(i), normEmployeeMap.get(winnersList.get(i))));
                 }
-                System.out.println("currentLotteryList = " + winnersList);
                 break;
             default:
                 break;
@@ -468,14 +479,35 @@ public class DynamicLotteryApp {
              "Apple Watch Ultra", "iPhone 15", "iPad Pro" //特等奖
         };
         String basePath = "/images/price/";
-        int index = 0;
+        int index = 1;
+        int category = 3;
+        for (int i = 0; i < 4; i++) {
+            String path = String.format("%s%d.%d.jpg", basePath, category, index);
+            allPriceNameMap.put(path, allPriceList[i]);
+            index++;
+        }
 
-        for (int i = 0; i <= 15; i++) {
-            int category = 3 - i / 4;  // 根据范围计算类别（3, 2, 1, 0）
-            int number = i % 4 + 1;   // 根据范围计算序号（1, 2, 3, 4）
+        category--;
+        index = 1;
+        for (int i = 4; i < 8; i++) {
+            String path = String.format("%s%d.%d.jpg", basePath, category, index);
+            allPriceNameMap.put(path, allPriceList[i]);
+            index++;
+        }
 
-            String path = String.format("%s%d.%d.jpg", basePath, category, number);
-            allPriceNameMap.put(path, allPriceList[index]);
+        category--;
+        index = 1;
+        for (int i = 8; i < 13; i++) {
+            String path = String.format("%s%d.%d.jpg", basePath, category, index);
+            allPriceNameMap.put(path, allPriceList[i]);
+            index++;
+        }
+
+        category--;
+        index = 1;
+        for (int i = 13; i < 16; i++) {
+            String path = String.format("%s%d.%d.jpg", basePath, category, index);
+            allPriceNameMap.put(path, allPriceList[i]);
             index++;
         }
     }
@@ -492,7 +524,11 @@ public class DynamicLotteryApp {
 
         for (int i = 0; i < currentLotteryList.size(); i++) {
             JLabel label = new JLabel(currentLotteryList.get(i));
-            label.setFont(new Font("微软雅黑", Font.PLAIN, 50));  // 设置字体大小为18
+            if (currentLotteryList.size() == 1) {
+                label.setFont(new Font("微软雅黑", Font.PLAIN, 80));  // 设置字体大小为18
+            } else {
+                label.setFont(new Font("微软雅黑", Font.PLAIN, 50));  // 设置字体大小为18
+            }
             label.setForeground(Color.white);
             namePanel.add(label, gbc);
             // 每 colCount 个元素换行
