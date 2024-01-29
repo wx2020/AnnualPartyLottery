@@ -35,6 +35,7 @@ public class DynamicLotteryApp {
     private JRadioButton firstPrizeRadio;
     private JRadioButton secondPrizeRadio;
     private JRadioButton thirdPrizeRadio;
+    private JRadioButton anotherPrizeRadio;
     private int currentPrice;
     private int currentPriceIndex;
     private final HashMap<String, String> normEmployeeMap;
@@ -143,17 +144,20 @@ public class DynamicLotteryApp {
         firstPrizeRadio = new JRadioButton("一等奖");
         secondPrizeRadio = new JRadioButton("二等奖");
         thirdPrizeRadio = new JRadioButton("三等奖");
+        anotherPrizeRadio = new JRadioButton("其他奖");
 
         ButtonGroup prizeGroup = new ButtonGroup();
         prizeGroup.add(thirdPrizeRadio);
         prizeGroup.add(secondPrizeRadio);
         prizeGroup.add(firstPrizeRadio);
         prizeGroup.add(specialPrizeRadio);
+        prizeGroup.add(anotherPrizeRadio);
 
         buttonPanel.add(thirdPrizeRadio);
         buttonPanel.add(secondPrizeRadio);
         buttonPanel.add(firstPrizeRadio);
         buttonPanel.add(specialPrizeRadio);
+        buttonPanel.add(anotherPrizeRadio);
 
         exitButton = new JButton("退出抽奖");
         AbstractAction exitButtonAction = new AbstractAction() {
@@ -175,14 +179,7 @@ public class DynamicLotteryApp {
         exitButton.addActionListener(exitButtonAction);
         buttonPanel.add(exitButton);
         pauseButton = new JButton();
-        ImageIcon icon = new ImageIcon(DynamicLotteryApp.class.getResource("/images/pause.png"));
-        // 设置要限制的大小
-        int width = 20;
-        int height = 20;
-        // 调整图像大小
-        Image resizedImage = icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
-        ImageIcon resizedIcon = new ImageIcon(resizedImage);
-        pauseButton.setIcon(resizedIcon);
+        setPlayButtonIcon("/images/pause.png");
         pauseButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -213,17 +210,17 @@ public class DynamicLotteryApp {
 
         namePanel = new JPanel(new GridBagLayout());
         namePanel.setOpaque(false);
-        namePanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 100));
+        namePanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 300));
         priceLabel = new JLabel();
         priceLabel.setBorder(BorderFactory.createEmptyBorder(100, 0, 0, 0));
-        priceLabel.setFont(new Font("华文中宋", Font.PLAIN, 50));
+        priceLabel.setFont(new Font("华文中宋", Font.PLAIN, 75));
         priceLabel.setForeground(Color.WHITE);
         priceLabel.setHorizontalAlignment(JLabel.CENTER); // 居中显示
         priceLabel.setVisible(false);
 
         ImageIcon priceImg = new ImageIcon();
         imageLabel = new JLabel(priceImg, JLabel.CENTER);
-        imageLabel.setBorder(BorderFactory.createEmptyBorder(0, 100, 0, 0));
+        imageLabel.setBorder(BorderFactory.createEmptyBorder(0, 250, 0, 0));
         labelPanel.setLayout(new BorderLayout());
         labelPanel.add(priceLabel, BorderLayout.NORTH);
         labelPanel.add(namePanel, BorderLayout.EAST); // 或 BorderLayout.WEST
@@ -270,8 +267,6 @@ public class DynamicLotteryApp {
                 currentPriceIndex = 0;
                 updatePriceImgPathList(currentPrice);
                 updateCurrentPrice(currentPrice, currentPriceIndex);
-                namePanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 300));
-
             }
         });
 
@@ -284,7 +279,19 @@ public class DynamicLotteryApp {
                 updateCurrentPrice(currentPrice, currentPriceIndex);
             }
         });
-        MusicPlayer.getInstance("background.wav");
+        //MusicPlayer.getInstance("background.wav");
+        anotherPrizeRadio.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                priceLabel.setText("阳光普照奖：稻香村礼盒");
+                priceLabel.setVisible(true);
+                labelPanel.remove(imageLabel);
+                labelPanel.remove(namePanel);
+                ImageIcon centerPriceImg = createScaledIcon("/images/price/all.jpg", 600);
+                JLabel centerImageLabel = new JLabel(centerPriceImg, JLabel.CENTER);
+                labelPanel.add(centerImageLabel, BorderLayout.CENTER);
+            }
+        });
     }
 
     private void setPlayButtonIcon(String path) {
@@ -310,7 +317,7 @@ public class DynamicLotteryApp {
         if (!imageLabel.isVisible()) {
             imageLabel.setVisible(true);
         }
-        ImageIcon newIcon = createScaledIcon(imgPath, 500);
+        ImageIcon newIcon = createScaledIcon(imgPath, 400);
         imageLabel.setIcon(newIcon);
     }
 
@@ -557,7 +564,7 @@ public class DynamicLotteryApp {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
-        gbc.insets = new Insets(10, 50, 10, 50); // 设置间隔
+        gbc.insets = new Insets(10, 25, 10, 25); // 设置间隔
 
         for (int i = 0; i < currentLotteryList.size(); i++) {
             JLabel label = new JLabel(currentLotteryList.get(i));
