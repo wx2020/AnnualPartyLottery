@@ -195,7 +195,6 @@ public class DynamicLotteryApp {
             }
         });
         buttonPanel.add(pauseButton);
-
         labelPanel = createBackgroundPanel("/images/bg1.jpg");
 
         // 添加鼠标点击事件监听器
@@ -279,7 +278,6 @@ public class DynamicLotteryApp {
                 updateCurrentPrice(currentPrice, currentPriceIndex);
             }
         });
-        //MusicPlayer.getInstance("background.wav");
         anotherPrizeRadio.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -292,6 +290,7 @@ public class DynamicLotteryApp {
                 labelPanel.add(centerImageLabel, BorderLayout.CENTER);
             }
         });
+        MusicPlayer.getInstance("background.wav");
     }
 
     private void setPlayButtonIcon(String path) {
