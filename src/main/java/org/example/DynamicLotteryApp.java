@@ -30,6 +30,7 @@ public class DynamicLotteryApp {
     private JButton stopButton;
     private JButton clearButton;
     private JButton exitButton;
+    private JButton pauseButton;
     private JRadioButton specialPrizeRadio;
     private JRadioButton firstPrizeRadio;
     private JRadioButton secondPrizeRadio;
@@ -39,6 +40,7 @@ public class DynamicLotteryApp {
     private final HashMap<String, String> normEmployeeMap;
     private final HashMap<String, String> specEmployeeMap;
     private final LuckyDraw drawer;
+    private boolean isPaused = false;
 
     public DynamicLotteryApp() {
         ExcelReader reader = new ExcelReader();
@@ -172,7 +174,30 @@ public class DynamicLotteryApp {
         };
         exitButton.addActionListener(exitButtonAction);
         buttonPanel.add(exitButton);
-
+        pauseButton = new JButton();
+        ImageIcon icon = new ImageIcon(DynamicLotteryApp.class.getResource("/images/pause.png"));
+        // 设置要限制的大小
+        int width = 20;
+        int height = 20;
+        // 调整图像大小
+        Image resizedImage = icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
+        ImageIcon resizedIcon = new ImageIcon(resizedImage);
+        pauseButton.setIcon(resizedIcon);
+        pauseButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (isPaused) {
+                    setPlayButtonIcon("/images/pause.png");
+                    isPaused = false;
+                    MusicPlayer.getInstance("background.wav").resume();
+                } else {
+                    setPlayButtonIcon("/images/play.png");
+                    isPaused = true;
+                    MusicPlayer.getInstance("background.wav").pause();
+                }
+            }
+        });
+        buttonPanel.add(pauseButton);
 
         labelPanel = createBackgroundPanel("/images/bg1.jpg");
 
@@ -260,6 +285,17 @@ public class DynamicLotteryApp {
             }
         });
         MusicPlayer.getInstance("background.wav");
+    }
+
+    private void setPlayButtonIcon(String path) {
+        ImageIcon icon = new ImageIcon(DynamicLotteryApp.class.getResource(path));
+        // 设置要限制的大小
+        int width = 20;
+        int height = 20;
+        // 调整图像大小
+        Image resizedImage = icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
+        ImageIcon resizedIcon = new ImageIcon(resizedImage);
+        pauseButton.setIcon(resizedIcon);
     }
 
     private void updateCurrentPrice(int selectedPrize, int index) {

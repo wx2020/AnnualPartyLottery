@@ -7,6 +7,7 @@ import java.net.URL;
 public class MusicPlayer {
 
     private Clip clip;
+    private boolean isPaused = false;
 
     private static MusicPlayer instance;
 
@@ -18,10 +19,11 @@ public class MusicPlayer {
         musicThread.start();
     }
 
-    public static void getInstance(String musicFilePath) {
+    public static MusicPlayer getInstance(String musicFilePath) {
         if (instance == null) {
             instance = new MusicPlayer(musicFilePath);
         }
+        return instance;
     }
 
     private void initializeMusic(String path) {
@@ -58,10 +60,27 @@ public class MusicPlayer {
                 // 让线程休眠，保持程序运行
                 while (true) {
                     Thread.sleep(1000);
+                    // 检查是否暂停
+                    if (isPaused) {
+                        clip.stop();
+                    } else {
+                        // 如果没有暂停，继续播放
+                        clip.start();
+                    }
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
+    }
+
+    // 暂停音乐
+    public void pause() {
+        isPaused = true;
+    }
+
+    // 恢复音乐
+    public void resume() {
+        isPaused = false;
     }
 }
