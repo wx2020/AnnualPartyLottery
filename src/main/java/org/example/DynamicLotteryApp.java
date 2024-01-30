@@ -1,6 +1,5 @@
 package org.example;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -42,7 +41,7 @@ public class DynamicLotteryApp {
     private int currentMaxIndex;
     private final HashMap<String, String> normEmployeeMap;
     private final HashMap<String, String> specEmployeeMap;
-    private final LuckyDraw drawer;
+    private LuckyDraw drawer = new LuckyDraw();
     private boolean isDrawerPaused = false;
 
     private final String[] priceList = new String[]{
@@ -53,8 +52,13 @@ public class DynamicLotteryApp {
 
     public DynamicLotteryApp() {
         ExcelReader reader = new ExcelReader();
-        normEmployeeMap = reader.read(ExcelReader.normPath);
-        specEmployeeMap = reader.read(ExcelReader.specPath);
+        normEmployeeMap = reader.read(ExcelReader.normFileName);
+        specEmployeeMap = reader.read(ExcelReader.specFileName);
+        initGlobalFont();
+        if (normEmployeeMap.isEmpty() || specEmployeeMap.isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "请检查抽奖名单", "错误", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
         drawer = new LuckyDraw();
         initialize();
     }
@@ -93,7 +97,6 @@ public class DynamicLotteryApp {
         initMainForm(frame, label);
         initMainFrameSize(frame, label);
 
-        initGlobalFont();
         initPriceNameMap();
         // 获取默认屏幕设备
         GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();

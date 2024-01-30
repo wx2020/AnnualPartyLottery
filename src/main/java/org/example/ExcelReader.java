@@ -3,20 +3,26 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 
 public class ExcelReader {
 
-    public static String specPath = "/excel/name_list_spec.xlsx";
-    public static String normPath = "/excel/name_list_norm.xlsx";
-    public HashMap<String, String> read(String path) {
+    String userDir = System.getProperty("user.dir");
+
+    public static String specFileName = "name_list_spec.xlsx";
+    public static String normFileName = "name_list_norm.xlsx";
+    public HashMap<String, String> read(String fileName) {
         try {
+            String filePath = userDir + File.separator + fileName;
+
             // 读取 Excel 文件
-            InputStream inputStream = ExcelReader.class.getResourceAsStream(path);
+            FileInputStream fileInputStream = new FileInputStream(filePath);
+
             // 创建 Workbook 对象，支持 .xlsx 格式
-            Workbook workbook = new XSSFWorkbook(inputStream);
+            Workbook workbook = new XSSFWorkbook(fileInputStream);
 
             // 获取第一个 Sheet
             Sheet sheet = workbook.getSheetAt(0);
@@ -28,7 +34,7 @@ public class ExcelReader {
                 employeeMap.put(jobNum, name);
             }
             // 关闭资源
-            inputStream.close();
+            fileInputStream.close();
             workbook.close();
             return employeeMap;
         } catch (IOException e) {
@@ -38,9 +44,9 @@ public class ExcelReader {
     }
     public static void main(String[] args) {
         ExcelReader excelReader = new ExcelReader();
-        HashMap<String, String> specEmployeeMap = excelReader.read(specPath);
+        HashMap<String, String> specEmployeeMap = excelReader.read(specFileName);
         System.out.println("spec employee Map = " + specEmployeeMap);
-        HashMap<String, String> normEmployeeMap = excelReader.read(normPath);
+        HashMap<String, String> normEmployeeMap = excelReader.read(normFileName);
         System.out.println("norm employee Map = " + normEmployeeMap);
     }
 }

@@ -34,7 +34,7 @@ public class LuckyDraw {
 
     public static void main(String[] args) {
         ExcelReader reader = new ExcelReader();
-        HashMap<String, String> employeeMap = reader.read(ExcelReader.normPath);
+        HashMap<String, String> employeeMap = reader.read(ExcelReader.normFileName);
         LuckyDraw drawer = new LuckyDraw();
         List<String> winnersList = drawer.drawPrize(employeeMap, 6);
         for (String jobNum: winnersList) {
