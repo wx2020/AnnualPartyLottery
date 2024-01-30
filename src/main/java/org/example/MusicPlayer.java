@@ -8,6 +8,7 @@ public class MusicPlayer {
 
     private Clip clip;
     private boolean isPaused = false;
+    private boolean isStarted = false;
 
     private static MusicPlayer instance;
 
@@ -59,7 +60,7 @@ public class MusicPlayer {
             try {
                 // 让线程休眠，保持程序运行
                 while (true) {
-                    Thread.sleep(1000);
+                    Thread.sleep(100);
                     // 检查是否暂停
                     if (isPaused) {
                         clip.stop();
@@ -79,8 +80,15 @@ public class MusicPlayer {
         isPaused = true;
     }
 
-    // 恢复音乐
-    public void resume() {
+    // 播放音乐
+    public void play() {
         isPaused = false;
+        if (isStarted) {
+            isStarted = false;
+        } else {
+            clip.setMicrosecondPosition(0); // Rewind to the beginning
+            clip.start();
+            isStarted = true;
+        }
     }
 }

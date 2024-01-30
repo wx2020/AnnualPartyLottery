@@ -1,11 +1,10 @@
 package org.example;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.List;
@@ -17,6 +16,7 @@ public class DynamicLotteryApp {
     private JFrame frame;
     private JPanel buttonPanel;
     private JPanel labelPanel;
+    private JPanel priceListPanel;
     private JPanel namePanel;
     private JLabel priceLabel;
     private JLabel imageLabel;
@@ -30,18 +30,26 @@ public class DynamicLotteryApp {
     private JButton stopButton;
     private JButton clearButton;
     private JButton exitButton;
-    private JButton pauseButton;
+    private JButton minimizeButton;
     private JRadioButton specialPrizeRadio;
     private JRadioButton firstPrizeRadio;
     private JRadioButton secondPrizeRadio;
     private JRadioButton thirdPrizeRadio;
     private JRadioButton anotherPrizeRadio;
+    private List<JRadioButton> allPrizeRadioList = new ArrayList<>();
     private int currentPrice;
     private int currentPriceIndex;
+    private int currentMaxIndex;
     private final HashMap<String, String> normEmployeeMap;
     private final HashMap<String, String> specEmployeeMap;
     private final LuckyDraw drawer;
-    private boolean isPaused = false;
+    private boolean isDrawerPaused = false;
+
+    private final String[] priceList = new String[]{
+            "三等奖", "二等奖", "一等奖", "特等奖"
+    };
+
+    private List<JLabel> priceLabelList = new ArrayList<>();
 
     public DynamicLotteryApp() {
         ExcelReader reader = new ExcelReader();
@@ -78,7 +86,8 @@ public class DynamicLotteryApp {
 
 
     private void initialize() {
-        frame = new JFrame("实时抽奖程序");
+        frame = new JFrame("年会抽奖程序");
+        initAppIcon();
         ImageIcon bg = new ImageIcon(DynamicLotteryApp.class.getResource("/images/bg1.jpg"));
         JLabel label = createBackgroundLabel(bg);
         initMainForm(frame, label);
@@ -90,7 +99,7 @@ public class DynamicLotteryApp {
         GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
 
         // 设置全屏
-        //frame.setUndecorated(true);
+        frame.setUndecorated(true);
         frame.setSize(gd.getDisplayMode().getWidth(), gd.getDisplayMode().getHeight());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -114,7 +123,7 @@ public class DynamicLotteryApp {
         drawButton.getInputMap().put(KeyStroke.getKeyStroke("ENTER"), "pressed");
         drawButton.getActionMap().put("pressed", drawButtonAction);
         drawButton.addActionListener(drawButtonAction);
-
+        drawButton.setEnabled(false);
         buttonPanel.add(drawButton);
 
         stopButton = new JButton("停止抽奖");
@@ -128,7 +137,7 @@ public class DynamicLotteryApp {
         stopButton.getInputMap().put(KeyStroke.getKeyStroke("SPACE"), "pressed");
         stopButton.getActionMap().put("pressed", stopButtonAction);
         stopButton.addActionListener(stopButtonAction);
-
+        stopButton.setEnabled(false);
         buttonPanel.add(stopButton);
 
         clearButton = new JButton("兑奖");
@@ -138,6 +147,7 @@ public class DynamicLotteryApp {
                 clearAndSaveWinners();
             }
         });
+        clearButton.setEnabled(false);
         buttonPanel.add(clearButton);
 
         specialPrizeRadio = new JRadioButton("特等奖");
@@ -159,7 +169,13 @@ public class DynamicLotteryApp {
         buttonPanel.add(specialPrizeRadio);
         buttonPanel.add(anotherPrizeRadio);
 
-        exitButton = new JButton("退出抽奖");
+        allPrizeRadioList.add(thirdPrizeRadio);
+        allPrizeRadioList.add(secondPrizeRadio);
+        allPrizeRadioList.add(firstPrizeRadio);
+        allPrizeRadioList.add(specialPrizeRadio);
+        allPrizeRadioList.add(anotherPrizeRadio);
+
+        exitButton = new JButton("退出");
         AbstractAction exitButtonAction = new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -176,29 +192,22 @@ public class DynamicLotteryApp {
                 // 如果用户点击了"否"或关闭了对话框，不执行退出逻辑
             }
         };
-        exitButton.addActionListener(exitButtonAction);
-        buttonPanel.add(exitButton);
-        pauseButton = new JButton();
-        setPlayButtonIcon("/images/pause.png");
-        pauseButton.addActionListener(new ActionListener() {
+        minimizeButton = new JButton();
+        AbstractAction minimizeAction = new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (isPaused) {
-                    setPlayButtonIcon("/images/pause.png");
-                    isPaused = false;
-                    MusicPlayer.getInstance("background.wav").resume();
-                } else {
-                    setPlayButtonIcon("/images/play.png");
-                    isPaused = true;
-                    MusicPlayer.getInstance("background.wav").pause();
-                }
+                frame.setState(JFrame.ICONIFIED);
             }
-        });
-        buttonPanel.add(pauseButton);
+        };
+        minimizeButton.addActionListener(minimizeAction);
+        setButtonIcon(minimizeButton, "/images/minimize.png");
+        buttonPanel.add(minimizeButton);
+        exitButton.addActionListener(exitButtonAction);
+        buttonPanel.add(exitButton);
         labelPanel = createBackgroundPanel("/images/bg1.jpg");
 
         // 添加鼠标点击事件监听器
-        labelPanel.addMouseListener(new MouseAdapter() {
+        /*labelPanel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 // 鼠标点击时更改背景图像
@@ -206,13 +215,13 @@ public class DynamicLotteryApp {
                 labelPanel.removeMouseListener(this);
             }
         });
-
+*/
         namePanel = new JPanel(new GridBagLayout());
         namePanel.setOpaque(false);
         namePanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 300));
         priceLabel = new JLabel();
         priceLabel.setBorder(BorderFactory.createEmptyBorder(100, 0, 0, 0));
-        priceLabel.setFont(new Font("华文中宋", Font.PLAIN, 75));
+        priceLabel.setFont(new Font("华文中宋", Font.PLAIN, 100));
         priceLabel.setForeground(Color.WHITE);
         priceLabel.setHorizontalAlignment(JLabel.CENTER); // 居中显示
         priceLabel.setVisible(false);
@@ -220,10 +229,21 @@ public class DynamicLotteryApp {
         ImageIcon priceImg = new ImageIcon();
         imageLabel = new JLabel(priceImg, JLabel.CENTER);
         imageLabel.setBorder(BorderFactory.createEmptyBorder(0, 250, 0, 0));
+
+        for (int i = 0; i < 4; i++) {
+            JLabel jLabel = new JLabel(priceList[i]);
+            priceLabelList.add(jLabel);
+        }
+
+        priceListPanel = new JPanel();
+        priceListPanel.setLayout(new BoxLayout(priceListPanel, BoxLayout.Y_AXIS));
+        priceListPanel.setOpaque(false);
+
         labelPanel.setLayout(new BorderLayout());
         labelPanel.add(priceLabel, BorderLayout.NORTH);
         labelPanel.add(namePanel, BorderLayout.EAST); // 或 BorderLayout.WEST
         labelPanel.add(imageLabel, BorderLayout.WEST); // 或 BorderLayout.WEST
+        labelPanel.add(priceListPanel, BorderLayout.CENTER);
 
         frame.getLayeredPane().add(labelPanel, Integer.MIN_VALUE);
         frame.add(labelPanel, BorderLayout.CENTER);
@@ -243,44 +263,60 @@ public class DynamicLotteryApp {
         thirdPrizeRadio.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                drawButton.setEnabled(true);
+                changeBackground(labelPanel, "/images/bg2.jpg");
                 currentPrice = 3;
                 currentPriceIndex = 0;
                 updatePriceImgPathList(currentPrice);
                 updateCurrentPrice(currentPrice, currentPriceIndex);
+                disableAllRadioGroup();
             }
         });
         secondPrizeRadio.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                priceListPanel.setVisible(false);
+                drawButton.setEnabled(true);
+                namePanel.setVisible(true);
                 currentPrice = 2;
                 currentPriceIndex = 0;
                 updatePriceImgPathList(currentPrice);
                 updateCurrentPrice(currentPrice, currentPriceIndex);
+                disableAllRadioGroup();
             }
         });
 
         firstPrizeRadio.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                priceListPanel.setVisible(false);
+                drawButton.setEnabled(true);
+                namePanel.setVisible(true);
                 currentPrice = 1;
                 currentPriceIndex = 0;
                 updatePriceImgPathList(currentPrice);
                 updateCurrentPrice(currentPrice, currentPriceIndex);
+                disableAllRadioGroup();
             }
         });
 
         specialPrizeRadio.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                priceListPanel.setVisible(false);
+                drawButton.setEnabled(true);
+                namePanel.setVisible(true);
                 currentPrice = 0;
                 currentPriceIndex = 0;
                 updatePriceImgPathList(currentPrice);
                 updateCurrentPrice(currentPrice, currentPriceIndex);
+                disableAllRadioGroup();
             }
         });
         anotherPrizeRadio.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                priceListPanel.setVisible(false);
                 priceLabel.setText("阳光普照奖：稻香村礼盒");
                 priceLabel.setVisible(true);
                 labelPanel.remove(imageLabel);
@@ -288,12 +324,31 @@ public class DynamicLotteryApp {
                 ImageIcon centerPriceImg = createScaledIcon("/images/price/all.jpg", 600);
                 JLabel centerImageLabel = new JLabel(centerPriceImg, JLabel.CENTER);
                 labelPanel.add(centerImageLabel, BorderLayout.CENTER);
+                disableAllRadioGroup();
             }
         });
-        MusicPlayer.getInstance("background.wav");
     }
 
-    private void setPlayButtonIcon(String path) {
+    private void initAppIcon() {
+        ImageIcon icon = new ImageIcon(DynamicLotteryApp.class.getResource("/images/fih_icon.png"));
+        // 设置图标
+        frame.setIconImage(icon.getImage());
+    }
+
+    private void disableAllRadioGroup() {
+        for (JRadioButton button : allPrizeRadioList) {
+            button.setEnabled(false);
+        }
+    }
+
+    private void enableNotDrawRadioBtn(int index) {
+        for (int i = index; i < 5; i++) {
+            allPrizeRadioList.get(i).setEnabled(true);
+        }
+    }
+
+
+    private void setButtonIcon(JButton button, String path) {
         ImageIcon icon = new ImageIcon(DynamicLotteryApp.class.getResource(path));
         // 设置要限制的大小
         int width = 20;
@@ -301,7 +356,7 @@ public class DynamicLotteryApp {
         // 调整图像大小
         Image resizedImage = icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
         ImageIcon resizedIcon = new ImageIcon(resizedImage);
-        pauseButton.setIcon(resizedIcon);
+        button.setIcon(resizedIcon);
     }
 
     private void updateCurrentPrice(int selectedPrize, int index) {
@@ -408,11 +463,7 @@ public class DynamicLotteryApp {
                 JOptionPane.showMessageDialog(frame, "请选中要抽的奖项！", "提示", JOptionPane.WARNING_MESSAGE);
                 return;
             }
-
-            specialPrizeRadio.setEnabled(false);
-            firstPrizeRadio.setEnabled(false);
-            secondPrizeRadio.setEnabled(false);
-            thirdPrizeRadio.setEnabled(false);
+            MusicPlayer.getInstance("background.wav").play();
 
             isDrawing = true;
             drawButton.setEnabled(false);
@@ -435,17 +486,15 @@ public class DynamicLotteryApp {
 
     private void stopDrawing() {
         if (isDrawing) {
-            specialPrizeRadio.setEnabled(true);
-            firstPrizeRadio.setEnabled(true);
-            secondPrizeRadio.setEnabled(true);
-            thirdPrizeRadio.setEnabled(true);
+            MusicPlayer.getInstance("background.wav").pause();
 
             isDrawing = false;
-            drawButton.setEnabled(true);
+            drawButton.setEnabled(false);
             stopButton.setEnabled(false);
             clearButton.setEnabled(true);
 
             executorService.shutdown();
+
         }
     }
 
@@ -516,10 +565,10 @@ public class DynamicLotteryApp {
 
     private void initPriceNameMap() {
         String[] allPriceList = new String[] {
-             "usmile电动牙刷", "小米小爱触屏音箱", "泰国乳胶枕", "美的空气炸锅", // 三等奖
-             "全自动咖啡机", "徕芬高速吹风机", "小米照片打印机", "不莱玫行李箱", // 二等奖
-             "极米Play3投影仪", "Apple AirPods Pro", "GoPro运动相机", "戴森无线吸尘器", "Switch任天堂游戏机", //一等奖
-             "Apple Watch Ultra", "iPhone 15", "iPad Pro" //特等奖
+                "usmile电动牙刷", "小米小爱触屏音箱", "泰国乳胶枕", "美的空气炸锅", // 三等奖
+                "全自动咖啡机", "徕芬高速吹风机", "小米照片打印机", "不莱玫行李箱", // 二等奖
+                "极米Play3投影仪", "Apple AirPods Pro", "GoPro运动相机", "戴森无线吸尘器", "Switch任天堂游戏机", //一等奖
+                "Apple Watch Ultra", "iPhone 15", "iPad Pro" //特等奖
         };
         String basePath = "/images/price/";
         int index = 1;
@@ -568,6 +617,7 @@ public class DynamicLotteryApp {
         for (int i = 0; i < currentLotteryList.size(); i++) {
             JLabel label = new JLabel(currentLotteryList.get(i));
             if (currentLotteryList.size() == 1) {
+                namePanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 400));
                 label.setFont(new Font("微软雅黑", Font.PLAIN, 80));  // 设置字体大小为18
             } else {
                 label.setFont(new Font("微软雅黑", Font.PLAIN, 50));  // 设置字体大小为18
@@ -595,29 +645,69 @@ public class DynamicLotteryApp {
         namePanel.removeAll();
         namePanel.revalidate();
         namePanel.repaint();
-        if (currentPrice == 3) {
-            updateAndCheckIfPrizeDrawn(currentPrice, 7, thirdPrizeRadio, true);
-        } else if (currentPrice == 2) {
-            updateAndCheckIfPrizeDrawn(currentPrice, 3, secondPrizeRadio, false);
-        } else if (currentPrice == 1) {
-            updateAndCheckIfPrizeDrawn(currentPrice, 4, firstPrizeRadio, false);
-        } else if (currentPrice == 0) {
-            updateAndCheckIfPrizeDrawn(currentPrice, 2, specialPrizeRadio, false);
+        if (isDrawerPaused) {
+            if (currentPrice == 3) {
+                currentMaxIndex = 7;
+                updateAndCheckIfPrizeDrawn(currentPrice, thirdPrizeRadio, true);
+            } else if (currentPrice == 2) {
+                currentMaxIndex = 3;
+                updateAndCheckIfPrizeDrawn(currentPrice, secondPrizeRadio, false);
+            } else if (currentPrice == 1) {
+                currentMaxIndex = 4;
+                updateAndCheckIfPrizeDrawn(currentPrice, firstPrizeRadio, false);
+            } else if (currentPrice == 0) {
+                currentMaxIndex = 2;
+                updateAndCheckIfPrizeDrawn(currentPrice, specialPrizeRadio, false);
+            }
+            isDrawerPaused = false;
+        } else {
+            clearButton.setText("继续");
+            namePanel.setVisible(false);
+            priceLabel.setVisible(false);
+            imageLabel.setVisible(false);
+            drawButton.setEnabled(false);
+            handlePriceListPanel();
+            isDrawerPaused = true;
         }
     }
 
-    private void updateAndCheckIfPrizeDrawn(int currentPrice, int maxIndex, JRadioButton prizeRadio, boolean checkEvenIndex) {
-        if (currentPriceIndex < maxIndex) {
+
+    private void handlePriceListPanel() {
+        priceListPanel.removeAll();
+        priceListPanel.setVisible(true);
+        priceListPanel.add(Box.createVerticalStrut(150)); // 设置距离顶部的间距为20像素
+        // 遍历数组并将每个元素显示为标签
+        for (int i = 0; i < 4; i++) {
+            JLabel label = priceLabelList.get(i);
+            label.setFont(new Font("微软雅黑", Font.PLAIN, 80));  // 设置字体大小为18
+            label.setAlignmentX(Component.CENTER_ALIGNMENT);  // 居中对齐
+            label.setForeground(Color.white);
+            if (i + currentPrice < 3) {
+                label.setEnabled(false);
+            }
+            priceListPanel.add(label);
+            priceListPanel.add(Box.createVerticalStrut(50)); // 设置垂直间距为10像素
+        }
+    }
+
+    private void updateAndCheckIfPrizeDrawn(int currentPrice, JRadioButton prizeRadio, boolean checkEvenIndex) {
+        if (currentPriceIndex < currentMaxIndex) {
+            namePanel.setVisible(true);
+            priceLabel.setVisible(true);
+            imageLabel.setVisible(true);
+            priceListPanel.setVisible(false);
+            drawButton.setEnabled(true);
+            clearButton.setText("兑奖");
+            clearButton.setEnabled(false);
             currentPriceIndex++;
             if (!checkEvenIndex || currentPriceIndex % 2 == 0) {
                 updateCurrentPrice(currentPrice, checkEvenIndex ? currentPriceIndex / 2 : currentPriceIndex);
             }
         } else {
-            JOptionPane.showMessageDialog(frame, String.format("当前%s已抽完", getPrizeString(currentPrice)),
-                    "提示", JOptionPane.WARNING_MESSAGE);
-            priceLabel.setVisible(false);
-            imageLabel.setVisible(false);
-            prizeRadio.setEnabled(false);
+            clearButton.setText("兑奖");
+            clearButton.setEnabled(false);
+            priceLabelList.get(3 - this.currentPrice).setEnabled(false);
+            enableNotDrawRadioBtn( 4 - this.currentPrice);
         }
     }
 
@@ -637,7 +727,7 @@ public class DynamicLotteryApp {
     }
 
     private String getPrizeString(int selectedPrize) {
-         switch (selectedPrize) {
+        switch (selectedPrize) {
             case 3:
                 return "三等奖";
             case 2:
